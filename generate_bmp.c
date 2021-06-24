@@ -41,9 +41,15 @@ typedef struct tagPalette {
 
 PaletteT g_palette[256];
 
-char buf[1600*1296*2];
-char gray[1600*1296];
-#define GRAY_RAW_FILE "./cap_raw_raw_1600x1296_3200.raw"
+//#define WIDTH    1600
+//#define HEIGHT   1296
+#define WIDTH    640
+#define HEIGHT   480
+
+char buf[WIDTH*HEIGHT*2];
+char gray[WIDTH*HEIGHT];
+//#define GRAY_RAW_FILE "./cap_raw_raw_1600x1296_3200.raw"
+#define GRAY_RAW_FILE "./cap.raw"
 
 void palette_init(void)
 {
@@ -64,7 +70,7 @@ int main(void)
         return -1;
     }
 
-    fread(buf, 1, 1600*1296*2, fp);
+    fread(buf, 1, WIDTH*HEIGHT*2, fp);
     fclose(fp);
 
     FILE *fw = fopen("./out.bmp", "w+");
@@ -77,9 +83,9 @@ int main(void)
     uint16_t *p = (uint16_t *)buf;
 
     // gray bit10 to gray bit8
-    for (int i=0; i<1600*1296; i++) {
+    for (int i=0; i<WIDTH*HEIGHT; i++) {
         //gray[i] = p[i] >> 6;
-        gray[i] = (p[i] >> 8) & 0xFF;
+        gray[i] = (p[i] >> 4) & 0xFF;
     }
 
     palette_init();
@@ -98,8 +104,8 @@ int main(void)
 
     InodeHeader node;
     node.biSize = sizeof(InodeHeader);
-    node.biWith = 1600;
-    node.biHeight = 1296;
+    node.biWith = WIDTH;
+    node.biHeight = HEIGHT;
     node.biPlanes = 1; //must set 1
     //node.biBitCount = 16;
     node.biBitCount = 8; // bit8 256 level gray
