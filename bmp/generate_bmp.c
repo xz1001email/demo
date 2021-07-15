@@ -41,10 +41,16 @@ typedef struct tagPalette {
 
 PaletteT g_palette[256];
 
-//#define WIDTH    1600
-//#define HEIGHT   1296
-#define WIDTH    640
-#define HEIGHT   480
+
+#define PIXEL_BITS  8
+//#define PIXEL_BITS  10
+//#define WIDTH       1600
+//#define HEIGHT      1296
+
+#define WIDTH       640
+#define HEIGHT      720
+//#define WIDTH    640
+//#define HEIGHT   480
 
 char buf[WIDTH*HEIGHT*2];
 char gray[WIDTH*HEIGHT];
@@ -79,13 +85,37 @@ int main(void)
         return -1;
     }
 
+    int mode = 3;
 
     uint16_t *p = (uint16_t *)buf;
 
+
+    int drop_bit = 16 - PIXEL_BITS;
+
     // gray bit10 to gray bit8
-    for (int i=0; i<WIDTH*HEIGHT; i++) {
-        //gray[i] = p[i] >> 6;
-        gray[i] = (p[i] >> 4) & 0xFF;
+    for (int h=0; h<HEIGHT; h++) {
+        for (int w=0; w<WIDTH; w++) {
+            
+            if (mode == 0) {
+                //pixel 从上到下，从左到右
+                gray[h*WIDTH+w] = (p[h*WIDTH + w] >> drop_bit) & 0xFF;
+            } else if (mode == 1) {
+                //pixel 从上到下，从右到左
+                gray[h*WIDTH+w] = (p[h*WIDTH + WIDTH-1 - w] >> drop_bit) & 0xFF;
+
+            } else if (mode ==2) {
+                //pixel 从下到上，从左到右
+                gray[h*WIDTH+w] = (p[WIDTH*HEIGHT - 1 - (h*WIDTH+ w)] >> drop_bit) & 0xFF;
+
+            } else if (mode == 3) {
+                //pixel 从下到上，从右到左
+                gray[h*WIDTH+w] = (p[WIDTH*HEIGHT - 1 - (h*WIDTH+ WIDTH-1 - w)] >> drop_bit) & 0xFF;
+            } else {
+                //pixel 从下到上，从右到左
+                gray[h*WIDTH+w] = (p[WIDTH*HEIGHT - 1 - (h*WIDTH+ WIDTH-1 - w)] >> drop_bit) & 0xFF;
+            }
+
+        }
     }
 
     palette_init();
