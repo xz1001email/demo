@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 
 /* 
@@ -68,11 +70,11 @@ void palette_init(void)
 }
 
 
-int main(void)
+int fillBmp(const char *rawfile, int mode)
 {
-    FILE *fp = fopen(GRAY_RAW_FILE, "r");
+    FILE *fp = fopen(rawfile, "r");
     if (!fp) {
-        printf("open file %s fail\n", GRAY_RAW_FILE);
+        printf("open file %s fail\n", rawfile);
         return -1;
     }
 
@@ -84,8 +86,6 @@ int main(void)
         printf("open file fail\n");
         return -1;
     }
-
-    int mode = 3;
 
     uint16_t *p = (uint16_t *)buf;
 
@@ -166,3 +166,59 @@ int main(void)
 
     return 0;
 }
+
+
+const char *opt_string = "hm:f:";
+
+
+void usage(void)
+{
+    fprintf(stderr, "Usage: [-h] [-f rawfile] [-m mode]\n");
+}
+
+int main(int argc, char *argv[])
+{
+    int mode = 3;
+    int opt;
+    char file[128] = {"cap.raw"};
+
+    while ((opt = getopt(argc, argv, opt_string)) != -1) {
+        switch (opt) {
+            case 'h':
+                usage();
+                exit(EXIT_SUCCESS);
+            case 'm':
+                mode = atoi(optarg);
+                break;
+            case 'f':
+                snprintf(file, sizeof(file), "%s", optarg);
+                break;
+            default: /* '?' */
+                usage();
+                exit(EXIT_FAILURE);
+        }
+    }
+
+
+#if 0
+    if (optind >= argc) {
+        fprintf(stderr, "Expected argument after options\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("name argument = %s\n", argv[optind]);
+#endif
+
+    fillBmp(file, mode);
+
+
+
+    /* Other code omitted */
+
+    exit(EXIT_SUCCESS);
+}
+
+
+
+
+
+
