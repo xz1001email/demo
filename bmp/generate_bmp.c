@@ -174,7 +174,7 @@ const char *opt_string = "hm:f:b:W:H:";
 void usage(void)
 {
     fprintf(stderr, "Usage: [-h] [-f rawfile] [-m mode] [-b pixel_bit] [-W width] [-H height]\n");
-    fprintf(stderr, "./generate_bmp -f cap_raw_raw_1600x1296_3200.raw -b 10 -W 1600 -H 1296");
+    fprintf(stderr, "./generate_bmp -f cap_raw_raw_1600x1296_3200.raw -b 10 -W 1600 -H 1296\n");
 }
 
 int main(int argc, char *argv[])
