@@ -46,11 +46,11 @@ PaletteT g_palette[256];
 
 #define PIXEL_BITS  8
 //#define PIXEL_BITS  10
-//#define WIDTH       1600
-//#define HEIGHT      1296
+#define WIDTH       1600
+#define HEIGHT      1296
 
-#define WIDTH       640
-#define HEIGHT      720
+//#define WIDTH       640
+//#define HEIGHT      720
 //#define WIDTH    640
 //#define HEIGHT   480
 
@@ -70,7 +70,7 @@ void palette_init(void)
 }
 
 
-int fillBmp(const char *rawfile, int mode)
+int fillBmp(const char *rawfile, int mode, int bits, int width, int height)
 {
     FILE *fp = fopen(rawfile, "r");
     if (!fp) {
@@ -78,7 +78,7 @@ int fillBmp(const char *rawfile, int mode)
         return -1;
     }
 
-    fread(buf, 1, WIDTH*HEIGHT*2, fp);
+    fread(buf, 1, width*height*2, fp);
     fclose(fp);
 
     FILE *fw = fopen("./out.bmp", "w+");
@@ -90,29 +90,29 @@ int fillBmp(const char *rawfile, int mode)
     uint16_t *p = (uint16_t *)buf;
 
 
-    int drop_bit = 16 - PIXEL_BITS;
+    int drop_bit = 16 - bits;
 
     // gray bit10 to gray bit8
-    for (int h=0; h<HEIGHT; h++) {
-        for (int w=0; w<WIDTH; w++) {
+    for (int h=0; h<height; h++) {
+        for (int w=0; w<width; w++) {
             
             if (mode == 0) {
                 //pixel 从上到下，从左到右
-                gray[h*WIDTH+w] = (p[h*WIDTH + w] >> drop_bit) & 0xFF;
+                gray[h*width+w] = (p[h*width + w] >> drop_bit) & 0xFF;
             } else if (mode == 1) {
                 //pixel 从上到下，从右到左
-                gray[h*WIDTH+w] = (p[h*WIDTH + WIDTH-1 - w] >> drop_bit) & 0xFF;
+                gray[h*width+w] = (p[h*width + width-1 - w] >> drop_bit) & 0xFF;
 
             } else if (mode ==2) {
                 //pixel 从下到上，从左到右
-                gray[h*WIDTH+w] = (p[WIDTH*HEIGHT - 1 - (h*WIDTH+ w)] >> drop_bit) & 0xFF;
+                gray[h*width+w] = (p[width*height - 1 - (h*width+ w)] >> drop_bit) & 0xFF;
 
             } else if (mode == 3) {
                 //pixel 从下到上，从右到左
-                gray[h*WIDTH+w] = (p[WIDTH*HEIGHT - 1 - (h*WIDTH+ WIDTH-1 - w)] >> drop_bit) & 0xFF;
+                gray[h*width+w] = (p[width*height - 1 - (h*width+ width-1 - w)] >> drop_bit) & 0xFF;
             } else {
                 //pixel 从下到上，从右到左
-                gray[h*WIDTH+w] = (p[WIDTH*HEIGHT - 1 - (h*WIDTH+ WIDTH-1 - w)] >> drop_bit) & 0xFF;
+                gray[h*width+w] = (p[width*height - 1 - (h*width+ width-1 - w)] >> drop_bit) & 0xFF;
             }
 
         }
@@ -134,8 +134,8 @@ int fillBmp(const char *rawfile, int mode)
 
     InodeHeader node;
     node.biSize = sizeof(InodeHeader);
-    node.biWith = WIDTH;
-    node.biHeight = HEIGHT;
+    node.biWith = width;
+    node.biHeight = height;
     node.biPlanes = 1; //must set 1
     //node.biBitCount = 16;
     node.biBitCount = 8; // bit8 256 level gray
@@ -168,19 +168,21 @@ int fillBmp(const char *rawfile, int mode)
 }
 
 
-const char *opt_string = "hm:f:";
+const char *opt_string = "hm:f:b:W:H:";
 
 
 void usage(void)
 {
-    fprintf(stderr, "Usage: [-h] [-f rawfile] [-m mode]\n");
+    fprintf(stderr, "Usage: [-h] [-f rawfile] [-m mode] [-b pixel_bit] [-W width] [-H height]\n");
+    fprintf(stderr, "./generate_bmp -f cap_raw_raw_1600x1296_3200.raw -b 10 -W 1600 -H 1296");
 }
 
 int main(int argc, char *argv[])
 {
-    int mode = 3;
+    int mode = 3, bits=8;
     int opt;
     char file[128] = {"cap.raw"};
+    int width = 1280, height=720;
 
     while ((opt = getopt(argc, argv, opt_string)) != -1) {
         switch (opt) {
@@ -190,6 +192,15 @@ int main(int argc, char *argv[])
             case 'm':
                 mode = atoi(optarg);
                 break;
+            case 'b':
+                bits = atoi(optarg);
+                break;
+            case 'W':
+                width = atoi(optarg);
+                break;
+            case 'H':
+                height = atoi(optarg);
+                break;
             case 'f':
                 snprintf(file, sizeof(file), "%s", optarg);
                 break;
@@ -197,6 +208,10 @@ int main(int argc, char *argv[])
                 usage();
                 exit(EXIT_FAILURE);
         }
+    }
+    
+    if (width > width || height > HEIGHT) {
+        printf("width max %d height max %d\n", WIDTH, HEIGHT);
     }
 
 
@@ -208,8 +223,7 @@ int main(int argc, char *argv[])
     printf("name argument = %s\n", argv[optind]);
 #endif
 
-    fillBmp(file, mode);
-
+    fillBmp(file, mode, bits, width, height);
 
 
     /* Other code omitted */
