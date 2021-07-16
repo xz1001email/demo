@@ -174,8 +174,15 @@ const char *opt_string = "hm:f:b:W:H:";
 void usage(void)
 {
     fprintf(stderr, "Usage: [-h] [-f rawfile] [-m mode] [-b pixel_bit] [-W width] [-H height]\n");
-    fprintf(stderr, "./generate_bmp -f cap_raw_raw_1600x1296_3200.raw -b 10 -W 1600 -H 1296\n");
+    //fprintf(stderr, "./generate_bmp -f cap_raw_raw_1600x1296_3200.raw -b 10 -W 1600 -H 1296\n");
 }
+enum {
+    POS_FILE,
+    POS_BITS,
+    POS_WIDTH,
+    POS_HEIGHT,
+    POS_MAX
+};
 
 int main(int argc, char *argv[])
 {
@@ -183,6 +190,7 @@ int main(int argc, char *argv[])
     int opt;
     char file[128] = {"cap.raw"};
     int width = 1280, height=720;
+    uint32_t flag = 0x0;
 
     while ((opt = getopt(argc, argv, opt_string)) != -1) {
         switch (opt) {
@@ -193,35 +201,45 @@ int main(int argc, char *argv[])
                 mode = atoi(optarg);
                 break;
             case 'b':
-                bits = atoi(optarg);
+                {
+                    bits = atoi(optarg);
+                    flag |= (1<<POS_BITS);
+                }
                 break;
             case 'W':
-                width = atoi(optarg);
+                {
+                    width = atoi(optarg);
+                    flag |= (1<<POS_WIDTH);
+                }
                 break;
             case 'H':
-                height = atoi(optarg);
+                {
+                    height = atoi(optarg);
+                    flag |= (1<<POS_HEIGHT);
+                }
                 break;
             case 'f':
-                snprintf(file, sizeof(file), "%s", optarg);
+                {
+                    snprintf(file, sizeof(file), "%s", optarg);
+                    flag |= (1<<POS_FILE);
+                }
                 break;
             default: /* '?' */
                 usage();
                 exit(EXIT_FAILURE);
         }
     }
+
+    int validbits = (1 << POS_MAX) - 1;
+    if((flag & validbits) != validbits) {
+        fprintf(stderr, "need args: [-f rawfile] [-b pixel_bit] [-W width] [-H height]\n");
+        return -1;
+    }
     
     if (width > width || height > HEIGHT) {
         printf("width max %d height max %d\n", WIDTH, HEIGHT);
+        return -1;
     }
-
-
-#if 0
-    if (optind >= argc) {
-        fprintf(stderr, "Expected argument after options\n");
-        exit(EXIT_FAILURE);
-    }
-    printf("name argument = %s\n", argv[optind]);
-#endif
 
     fillBmp(file, mode, bits, width, height);
 
