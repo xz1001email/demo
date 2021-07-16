@@ -44,10 +44,14 @@ typedef struct tagPalette {
 PaletteT g_palette[256];
 
 
+#define WIDTH       2000
+#define HEIGHT      2000
+
+
 #define PIXEL_BITS  8
 //#define PIXEL_BITS  10
-#define WIDTH       1600
-#define HEIGHT      1296
+//#define WIDTH       1600
+//#define HEIGHT      1296
 
 //#define WIDTH       640
 //#define HEIGHT      720
@@ -70,7 +74,7 @@ void palette_init(void)
 }
 
 
-int fillBmp(const char *rawfile, int mode, int bits, int width, int height)
+int fillBmp(const char *rawfile, int mode, int pixelByte, int bits, int width, int height)
 {
     FILE *fp = fopen(rawfile, "r");
     if (!fp) {
@@ -96,25 +100,45 @@ int fillBmp(const char *rawfile, int mode, int bits, int width, int height)
     for (int h=0; h<height; h++) {
         for (int w=0; w<width; w++) {
             
-            if (mode == 0) {
-                //pixel 从上到下，从左到右
-                gray[h*width+w] = (p[h*width + w] >> drop_bit) & 0xFF;
-            } else if (mode == 1) {
-                //pixel 从上到下，从右到左
-                gray[h*width+w] = (p[h*width + width-1 - w] >> drop_bit) & 0xFF;
+            if (pixelByte == 2) {
+                if (mode == 0) {
+                    //pixel 从上到下，从左到右
+                    gray[h*width+w] = (p[h*width + w] >> drop_bit) & 0xFF;
+                } else if (mode == 1) {
+                    //pixel 从上到下，从右到左
+                    gray[h*width+w] = (p[h*width + width-1 - w] >> drop_bit) & 0xFF;
 
-            } else if (mode ==2) {
-                //pixel 从下到上，从左到右
-                gray[h*width+w] = (p[width*height - 1 - (h*width+ w)] >> drop_bit) & 0xFF;
+                } else if (mode ==2) {
+                    //pixel 从下到上，从左到右
+                    gray[h*width+w] = (p[width*height - 1 - (h*width+ w)] >> drop_bit) & 0xFF;
 
-            } else if (mode == 3) {
-                //pixel 从下到上，从右到左
-                gray[h*width+w] = (p[width*height - 1 - (h*width+ width-1 - w)] >> drop_bit) & 0xFF;
+                } else if (mode == 3) {
+                    //pixel 从下到上，从右到左
+                    gray[h*width+w] = (p[width*height - 1 - (h*width+ width-1 - w)] >> drop_bit) & 0xFF;
+                } else {
+                    //pixel 从下到上，从右到左
+                    gray[h*width+w] = (p[width*height - 1 - (h*width+ width-1 - w)] >> drop_bit) & 0xFF;
+                }
             } else {
-                //pixel 从下到上，从右到左
-                gray[h*width+w] = (p[width*height - 1 - (h*width+ width-1 - w)] >> drop_bit) & 0xFF;
-            }
+                if (mode == 0) {
+                    //pixel 从上到下，从左到右
+                    gray[h*width+w] = (buf[h*width + w] >> drop_bit);
+                } else if (mode == 1) {
+                    //pixel 从上到下，从右到左
+                    gray[h*width+w] = (buf[h*width + width-1 - w] >> drop_bit);
 
+                } else if (mode ==2) {
+                    //pixel 从下到上，从左到右
+                    gray[h*width+w] = (buf[width*height - 1 - (h*width+ w)] >> drop_bit);
+
+                } else if (mode == 3) {
+                    //pixel 从下到上，从右到左
+                    gray[h*width+w] = (buf[width*height - 1 - (h*width+ width-1 - w)] >> drop_bit);
+                } else {
+                    //pixel 从下到上，从右到左
+                    gray[h*width+w] = (buf[width*height - 1 - (h*width+ width-1 - w)] >> drop_bit);
+                }
+            }
         }
     }
 
@@ -168,12 +192,12 @@ int fillBmp(const char *rawfile, int mode, int bits, int width, int height)
 }
 
 
-const char *opt_string = "hm:f:b:W:H:";
+const char *opt_string = "hm:f:B:b:W:H:";
 
 
 void usage(void)
 {
-    fprintf(stderr, "Usage: [-h] [-f rawfile] [-m mode] [-b pixel_bit] [-W width] [-H height]\n");
+    fprintf(stderr, "Usage: [-h] [-f rawfile] [-m mode] [-B pixel-bytes] [-b pixel_bit] [-W width] [-H height]\n");
     //fprintf(stderr, "./generate_bmp -f cap_raw_raw_1600x1296_3200.raw -b 10 -W 1600 -H 1296\n");
 }
 enum {
@@ -186,10 +210,12 @@ enum {
 
 int main(int argc, char *argv[])
 {
-    int mode = 3, bits=8;
+    int mode = 3;
+    uint32_t bits=8;
     int opt;
     char file[128] = {"cap.raw"};
-    int width = 1280, height=720;
+    uint32_t width = 1280, height=720;
+    uint32_t pixelByte = 2;
     uint32_t flag = 0x0;
 
     while ((opt = getopt(argc, argv, opt_string)) != -1) {
@@ -199,6 +225,11 @@ int main(int argc, char *argv[])
                 exit(EXIT_SUCCESS);
             case 'm':
                 mode = atoi(optarg);
+                break;
+            case 'B':
+                {
+                    pixelByte = atoi(optarg);
+                }
                 break;
             case 'b':
                 {
@@ -237,11 +268,20 @@ int main(int argc, char *argv[])
     }
     
     if (width > width || height > HEIGHT) {
-        printf("width max %d height max %d\n", WIDTH, HEIGHT);
+        printf("width max %d height max %d\n",WIDTH, HEIGHT);
         return -1;
     }
 
-    fillBmp(file, mode, bits, width, height);
+    if (pixelByte > 2) {
+        printf("pixelByte invalid, (1-2bytes)\n");
+        return -1;
+    }
+    if (bits > 16) {
+        printf("pixelbits invalid, (0-16bits)\n");
+        return -1;
+    }
+
+    fillBmp(file, mode, pixelByte, bits, width, height);
 
 
     /* Other code omitted */
