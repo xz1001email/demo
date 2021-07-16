@@ -1,0 +1,5 @@
+
+
+generate_bmp
+*.o
+*.bmp
