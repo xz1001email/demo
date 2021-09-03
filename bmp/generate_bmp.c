@@ -183,7 +183,7 @@ int fillBmp(const char *rawfile, int mode, int pixelByte, int bits, int width, i
     ret += fwrite(&g_palette[0], 1, sizeof(g_palette), fw);
     printf("write palette %d\n", ret);
 
-    ret += fwrite(gray, 1, sizeof(gray), fw);
+    ret += fwrite(gray, 1, width*height, fw);
     printf("write image data %d\n", ret);
     fclose(fw);
     
