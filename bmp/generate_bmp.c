@@ -74,7 +74,7 @@ void palette_init(void)
 }
 
 
-int fillBmp(const char *rawfile, int mode, int pixelByte, int bits, int width, int height)
+int fillBmp(const char *rawfile, const char *outfile, int mode, int pixelByte, int bits, int width, int height)
 {
     FILE *fp = fopen(rawfile, "r");
     if (!fp) {
@@ -85,7 +85,7 @@ int fillBmp(const char *rawfile, int mode, int pixelByte, int bits, int width, i
     fread(buf, 1, width*height*2, fp);
     fclose(fp);
 
-    FILE *fw = fopen("./out.bmp", "w+");
+    FILE *fw = fopen(outfile, "w+");
     if (!fw) {
         printf("open file fail\n");
         return -1;
@@ -192,7 +192,7 @@ int fillBmp(const char *rawfile, int mode, int pixelByte, int bits, int width, i
 }
 
 
-const char *opt_string = "hm:f:B:b:W:H:";
+const char *opt_string = "hm:f:o:B:b:W:H:";
 
 
 void usage(void)
@@ -214,6 +214,7 @@ int main(int argc, char *argv[])
     uint32_t bits=8;
     int opt;
     char file[128] = {"cap.raw"};
+    char outfile[128] = {"out.bmp"};
     uint32_t width = 1280, height=720;
     uint32_t pixelByte = 2;
     uint32_t flag = 0x0;
@@ -255,6 +256,12 @@ int main(int argc, char *argv[])
                     flag |= (1<<POS_FILE);
                 }
                 break;
+            case 'o':
+                {
+                    snprintf(outfile, sizeof(outfile), "%s", optarg);
+                    //flag |= (1<<POS_FILE);
+                }
+                break;
             default: /* '?' */
                 usage();
                 exit(EXIT_FAILURE);
@@ -281,7 +288,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    fillBmp(file, mode, pixelByte, bits, width, height);
+    fillBmp(file, outfile, mode, pixelByte, bits, width, height);
 
 
     /* Other code omitted */
