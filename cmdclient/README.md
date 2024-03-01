@@ -1,0 +1,2 @@
+# cmdclient
+cmd debug
