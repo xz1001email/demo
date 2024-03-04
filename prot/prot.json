@@ -1,0 +1,32 @@
+{
+    "server": {
+        "ip": "192.168.100.100",
+        "port": 8888
+    },
+
+    "client": {
+        "ip": "192.168.100.211",
+        "port": 0,
+        "device": "eth0"
+    },
+    "alert_para": {
+        "speed_filter_enable": true,
+        "alert_time_filter": 10,
+        "jpeg_fps": 5,
+        "record_speed": true,
+        "record_period": 60,
+        "use_heart": true,
+        "check_heart_period": 90,
+        "adasBitRate": [250, 500, 800, 1024, 800, 1024, 2048],
+        "dmsBitRate": [250, 500, 800, 1024, 1024, 2048]
+    },
+    "tty": {
+        "tty_name": "/dev/ttySC0",
+        "baudrate": 115200,
+        "parity": "NONE",
+        "stopbit": 1,
+        "bits": 8
+    }
+
+}
+

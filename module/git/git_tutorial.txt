@@ -1,0 +1,75 @@
+
+1.config user
+	git config --global user.name "xiao"
+	git config --global user.email "xiao@163.com"
+
+2.add sshkey and copy to github
+	cd ~
+	ssh-keygen -t rsa -C "email@163.com"
+	cd ~/.ssh
+	ssh-add id_rsa
+
+	then cp id_rsa.pub to github
+
+3.test key
+	ssh -T git@github.com
+
+4.create repository in local
+	git init .
+	echo "gitstart" >README.md
+	git add README.md
+	git commit -m "fisrt commit"
+
+5.down respository from github
+	git clone git@github.com:xxx/vimrc.git
+
+6.push to github
+	git remote add origin "git@github.com:xxx/vimrc.git"
+	git push -u origin master
+
+6.1#push to github
+git remote add origin git@github.com:xz1001email/msgpack.git
+git push -u origin master
+
+#push to github
+git remote add origin git@github.com:xz1001email/msgpack.git
+git push -u origin master
+
+
+7.recover version before
+git log  //find commit id
+git reset --hard e7a5e492c742a7b68c07f124edd4b713122c0666
+
+
+
+
+8.fetch
+update local repo from remote
+
+fetch
+pull
+
+9,修改最后一次提交用户名
+git config --global user.name "Your Name"
+git config --global user.email you@example.com
+git commit --amend --reset-author
+
+
+
+//拉取分支
+git remote show up
+git fetch up/minieye
+ls
+vim .git/FETCH_HEAD
+git fetch up minieye
+
+
+
+//拉取远程分支
+git checkout -b feature-fpga origin/feature-fpga
+
+//合并分支
+git merge up/feature-fpga
+
+------merge-------------
+
